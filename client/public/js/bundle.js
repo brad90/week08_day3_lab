@@ -93,7 +93,7 @@
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("const Bucketlist = __webpack_require__(/*! ./models/bucket_list.js */ \"./client/src/models/bucket_list.js\");\nconst BLView = __webpack_require__(/*! ./views/bl_view.js */ \"./client/src/views/bl_view.js\");\n\n\n\ndocument.addEventListener('DOMContentLoaded', () => {\n\n\nconst bucketlist = new Bucketlist\n\n\nconst container = document.querySelector(\"#list\")\nconst blView = new BLView(container)\n\n\nblView.render()\nbucketlist.getData()\n\n})\n\n\n//# sourceURL=webpack:///./client/src/app.js?");
+eval("const Bucketlist = __webpack_require__(/*! ./models/bucket_list.js */ \"./client/src/models/bucket_list.js\");\nconst BLView = __webpack_require__(/*! ./views/bl_view.js */ \"./client/src/views/bl_view.js\");\nconst BLFormView = __webpack_require__(/*! ./views/bl_form_view.js */ \"./client/src/views/bl_form_view.js\")\nconst BLListView = __webpack_require__(!(function webpackMissingModule() { var e = new Error(\"Cannot find module './views/bl_lsit_view.js'\"); e.code = 'MODULE_NOT_FOUND'; throw e; }()))\n\n\n\ndocument.addEventListener('DOMContentLoaded', () => {\n\n\nconst bucketlist = new Bucketlist\nbucketlist.bindEvents()\n\n\nconst blForm = document.querySelector('#form')\nconst blFormView = new BLFormView(blForm)\nblFormView.bindEvents()\n\n\nconst container = document.querySelector(\"#list\")\nconst blView = new BLView(container)\n\n\n\nblView.render()\nbucketlist.getData()\n\n})\n\n\n//# sourceURL=webpack:///./client/src/app.js?");
 
 /***/ }),
 
@@ -115,7 +115,7 @@ eval("const PubSub = {\n  publish: function (channel, payload) {\n    console.lo
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("const RequestHelper = function(url){\n  this.url = url;\n}\n\n\nRequestHelper.prototype.get = function () {\n  return fetch(this.url)\n    .then((response) => response.json())\n};\n\n\n\nmodule.exports = RequestHelper;\n\n\n//# sourceURL=webpack:///./client/src/helpers/request_helper.js?");
+eval("const RequestHelper = function(url){\n  this.url = url;\n}\n\n\nRequestHelper.prototype.get = function () {\n  return fetch(this.url)\n    .then((response) => response.json())\n};\n\nRequestHelper.prototype.post = function(payload){\n  console.log(\"rH\",payload);\n  return fetch(this.url, {\n    method: 'POST',\n    body: JSON.stringify(payload),\n    headers: { 'Content-Type': 'application/json'}\n  })\n    .then((response) => response.json());\n\n}\n\n\n\n\n\nmodule.exports = RequestHelper;\n\n\n//# sourceURL=webpack:///./client/src/helpers/request_helper.js?");
 
 /***/ }),
 
@@ -126,7 +126,18 @@ eval("const RequestHelper = function(url){\n  this.url = url;\n}\n\n\nRequestHel
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("const RequestHelper = __webpack_require__(/*! ../helpers/request_helper.js */ \"./client/src/helpers/request_helper.js\")\nconst PubSub = __webpack_require__ (/*! ../helpers/pub_sub.js */ \"./client/src/helpers/pub_sub.js\")\n\n\nconst Bucketlist = function() {\n  this.url = 'http://localhost:3000/api/bucketlist'\n  this.request = new RequestHelper(this.url)\n}\n\nBucketlist.prototype.getData = function () {\n  this.request.get()\n  .then((list) => {\n    console.log(\"List - ready\", list);\n    PubSub.publish(\"bucket_list:data-loaded\", list)\n  })\n  .catch(console.error)\n};\n\n\nmodule.exports = Bucketlist;\n\n\n//# sourceURL=webpack:///./client/src/models/bucket_list.js?");
+eval("const RequestHelper = __webpack_require__(/*! ../helpers/request_helper.js */ \"./client/src/helpers/request_helper.js\")\nconst PubSub = __webpack_require__(/*! ../helpers/pub_sub.js */ \"./client/src/helpers/pub_sub.js\")\n\n\nconst Bucketlist = function() {\n  this.url = 'http://localhost:3000/api/bucketlist'\n  this.request = new RequestHelper(this.url)\n}\n\n\nBucketlist.prototype.bindEvents = function () {\n  PubSub.subscribe(\"BLView:Activity-submitted\", (event) => {\n    this.postActivity(event.detail)\n  })\n\n};\n\n\n\nBucketlist.prototype.getData = function () {\n  this.request.get()\n  .then((list) => {\n    console.log(\"List - ready\", list);\n    PubSub.publish(\"bucket_list:data-loaded\", list)\n  })\n  .catch(console.error)\n};\n\nBucketlist.prototype.postActivity = function (activity) {\n  console.log(activity);\n  this.request.post(activity)\n    .then((activities) => {\n      console.log(activities);\n      PubSub.publish(\"bucket_list:data-loaded\", activities)\n    })\n    .catch(console.error)\n}\n\n\n\n\nmodule.exports = Bucketlist;\n\n\n//# sourceURL=webpack:///./client/src/models/bucket_list.js?");
+
+/***/ }),
+
+/***/ "./client/src/views/bl_form_view.js":
+/*!******************************************!*\
+  !*** ./client/src/views/bl_form_view.js ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+eval("const PubSub = __webpack_require__(/*! ../helpers/pub_sub.js */ \"./client/src/helpers/pub_sub.js\")\n\n\nconst BLFormView = function(form){\n  this.form = form;\n}\n\n\n\nBLFormView.prototype.bindEvents = function () {\n  this.form.addEventListener('submit', (event) => {\n    console.log(event)\n    this.handleSubmit(event)\n  })\n};\n\n\nBLFormView.prototype.handleSubmit = function (event) {\n  event.preventDefault();\n  const newActivity = this.createActivity(event.target)\n  console.log(newActivity);\n  PubSub.publish(\"BLView:Activity-submitted\", newActivity)\n  event.target.reset()\n  // const newActivity = this.createActivity(event.target)\n}\n\nBLFormView.prototype.createActivity = function(form) {\n\n  const newActivity = {\n    activity: form.activity.value\n  }\n  return newActivity\n}\n\n\n\n\n\nmodule.exports = BLFormView ;\n\n\n//# sourceURL=webpack:///./client/src/views/bl_form_view.js?");
 
 /***/ }),
 

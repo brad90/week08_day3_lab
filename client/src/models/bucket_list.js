@@ -1,11 +1,21 @@
 const RequestHelper = require('../helpers/request_helper.js')
-const PubSub = require ('../helpers/pub_sub.js')
+const PubSub = require('../helpers/pub_sub.js')
 
 
 const Bucketlist = function() {
   this.url = 'http://localhost:3000/api/bucketlist'
   this.request = new RequestHelper(this.url)
 }
+
+
+Bucketlist.prototype.bindEvents = function () {
+  PubSub.subscribe("BLView:Activity-submitted", (event) => {
+    this.postActivity(event.detail)
+  })
+
+};
+
+
 
 Bucketlist.prototype.getData = function () {
   this.request.get()
@@ -15,6 +25,18 @@ Bucketlist.prototype.getData = function () {
   })
   .catch(console.error)
 };
+
+Bucketlist.prototype.postActivity = function (activity) {
+  console.log(activity);
+  this.request.post(activity)
+    .then((activities) => {
+      console.log(activities);
+      PubSub.publish("bucket_list:data-loaded", activities)
+    })
+    .catch(console.error)
+}
+
+
 
 
 module.exports = Bucketlist;
