@@ -1,0 +1,24 @@
+{
+  "name": "day_03",
+  "version": "1.0.0",
+  "description": "",
+  "main": "webpack.config.js",
+  "scripts": {
+    "build": "webpack -w",
+    "start": "node server/server.js",
+    "server:dev": "nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.0",
+    "mongodb": "^3.2.5",
+    "webpack": "^4.32.1",
+    "webpack-cli": "^3.3.2"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.0"
+  }
+}
