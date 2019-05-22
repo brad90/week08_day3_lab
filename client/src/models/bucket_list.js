@@ -13,9 +13,10 @@ Bucketlist.prototype.bindEvents = function () {
     this.postActivity(event.detail)
   })
 
+  PubSub.subscribe('Bucketlist:activity-delete-clicked', (event) =>{
+    this.deleteActivity(event.detail)
+  })
 };
-
-
 
 Bucketlist.prototype.getData = function () {
   this.request.get()
@@ -36,7 +37,13 @@ Bucketlist.prototype.postActivity = function (activity) {
     .catch(console.error)
 }
 
-
+Bucketlist.prototype.deleteActivity = function (activityID) {
+  this.request.delete(activityID)
+  .then((activities) => {
+    PubSub.publish("bucket_list:data-loaded", activities)
+  })
+  .catch(console.error)
+}
 
 
 module.exports = Bucketlist;
