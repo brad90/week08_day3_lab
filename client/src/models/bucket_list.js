@@ -30,7 +30,7 @@ Bucketlist.prototype.postActivity = function (activity) {
   console.log(activity);
   this.request.post(activity)
     .then((activities) => {
-      console.log(activities);
+      console.log("i am post activities" ,activities);
       PubSub.publish("bucket_list:data-loaded", activities)
     })
     .catch(console.error)
